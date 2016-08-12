@@ -658,34 +658,49 @@ void x_draw_decoration(Con *con) {
 #ifdef USE_ICONS
     /* Draw the icon */
     if (win->icon) {
-        xcb_image_t* icon;
-
         uint16_t width = 16;
         uint16_t height = 16;
-        uint32_t icon_pixels[width*height];
+        uint32_t stride = 4*width;
 
-        copy_with_pixel_blend(icon_pixels, win->icon, p->color->background);
+        fprintf(stderr, "Creating icon\n");
+        surface_t *surface = &(parent->frame_buffer);
 
-        icon = xcb_image_create_native( conn,
-                width, height,
-                XCB_IMAGE_FORMAT_Z_PIXMAP,
-                root_depth,
-                NULL,
-                width*height*4,
-                (uint8_t*)icon_pixels
+        int icon_offset_x = indent_px - 16;
+        int icon_offset_y = (con->deco_rect.height - 16) / 2;
+        cairo_surface_t *dst = cairo_xcb_surface_create(conn, surface->id,
+                                                            surface->visual_type,
+                                                            con->deco_rect.x + con->deco_rect.width,
+                                                            con->deco_rect.y + con->deco_rect.height
+                                                            );
+        cairo_t *dst_cr = cairo_create(dst);
+
+        cairo_surface_t *icon = cairo_image_surface_create_for_data(
+                (uint8_t*) win->icon,
+                CAIRO_FORMAT_ARGB32,
+                width,
+                height,
+                stride
                 );
 
         if (icon) {
-            int icon_offset_y = (con->deco_rect.height - 16) / 2;
+            cairo_set_source_surface(
+                    dst_cr,
+                    icon,
+                    con->deco_rect.x + icon_offset_x,
+                    con->deco_rect.y + icon_offset_y
+                    );
 
-            xcb_image_put(conn, parent->pixmap, parent->pm_gc,
-                    icon, con->deco_rect.x + indent_px - 16 , con->deco_rect.y + icon_offset_y, 0);
+            cairo_paint(dst_cr);
+            cairo_surface_destroy(icon);
 
-            xcb_image_destroy(icon);
-        }
-        else {
+        } else {
             ELOG("Error creating XCB image\n");
+            fprintf(stderr, "Error creating XCB image\n");
         }
+
+        cairo_destroy(dst_cr);
+        cairo_surface_destroy(dst);
+
     }
 #endif
 
