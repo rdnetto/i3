@@ -1,5 +1,6 @@
 UNAME=$(shell uname)
 DEBUG=1
+USE_ICONS=1
 ASAN=0
 INSTALL=install
 LN=ln
@@ -65,6 +66,9 @@ I3_CPPFLAGS += -DMINOR_VERSION=${MINOR_VERSION}
 I3_CPPFLAGS += -DPATCH_VERSION=${PATCH_VERSION}
 I3_CPPFLAGS += -DSYSCONFDIR=\"${SYSCONFDIR}\"
 I3_CPPFLAGS += -DI3__FILE__=__FILE__
+ifeq ($(USE_ICONS),1)
+I3_CPPFLAGS += -DUSE_ICONS
+endif
 
 
 ## Libraries flags
@@ -114,6 +118,9 @@ XCB_WM_CFLAGS += $(call cflags_for_lib, xcb-randr)
 XCB_WM_LIBS   := $(call ldflags_for_lib, xcb-icccm,xcb-icccm)
 XCB_WM_LIBS   += $(call ldflags_for_lib, xcb-xinerama,xcb-xinerama)
 XCB_WM_LIBS   += $(call ldflags_for_lib, xcb-randr,xcb-randr)
+ifeq ($(USE_ICONS),1)
+XCB_WM_LIBS   += $(call ldflags_for_lib, xcb-image,xcb-image)
+endif
 
 # XCB cursor
 XCB_CURSOR_CFLAGS := $(call cflags_for_lib, xcb-cursor)

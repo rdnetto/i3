@@ -74,6 +74,15 @@ void window_update_type(i3Window *window, xcb_get_property_reply_t *reply);
  */
 void window_update_hints(i3Window *win, xcb_get_property_reply_t *prop, bool *urgency_hint);
 
+
+#ifdef USE_ICONS
+/**
+ * Updates the _NET_WM_ICON
+ *
+ */
+void window_update_icon(i3Window *win, xcb_get_property_reply_t *prop);
+#endif
+
 /**
  * Updates the MOTIF_WM_HINTS. The container's border style should be set to
  * `motif_border_style' if border style is not BS_NORMAL.
